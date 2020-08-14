@@ -1,8 +1,10 @@
 package com.example.oauth.demo.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Getter
@@ -37,6 +39,8 @@ public class OAuthAttributes {
     // 구글
     private static OAuthAttributes ofGoogle(String userNameAttributeName,
                                             Map<String, Object> attributes) {
+
+
         return OAuthAttributes.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
@@ -46,13 +50,20 @@ public class OAuthAttributes {
                 .build();
     }
 
-    // 페이스북
+    // 페이스북  -> 이미지 파싱 필요
     private static OAuthAttributes ofFaceBook(String userNameAttributeName,
                                             Map<String, Object> attributes) {
+
+        //  picture={data={height=50, is_silhouette=false, url=https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=3051485381636996&height=50&width=50&ext=1600003018&hash=AeRTziYd2gCIfv4X, width=50}}}
+        //  picture, data가 linkedHashMap으로 구현되어있음....
+
+       LinkedHashMap<String, Object> facebookPicture = (LinkedHashMap<String, Object>) attributes.get("picture");
+       LinkedHashMap<String, Object> facebookPictureData = (LinkedHashMap<String, Object>) facebookPicture.get("data");
+
         return OAuthAttributes.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
-                .picture((String) attributes.get("profile_picture"))
+                .picture(facebookPictureData.get("url").toString())
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();
@@ -62,14 +73,13 @@ public class OAuthAttributes {
     private static OAuthAttributes ofGithub(String userNameAttributeName,
                                               Map<String, Object> attributes) {
         return OAuthAttributes.builder()
-                .name((String) attributes.get("name"))
+                .name((String) attributes.get("bio"))
                 .email((String) attributes.get("email"))
-                .picture((String) attributes.get("picture"))
+                .picture((String) attributes.get("avatar_url"))
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .build();
     }
-
 
     //네이버
     private static OAuthAttributes ofNaver(Map<String, Object> attributes) {
@@ -83,4 +93,5 @@ public class OAuthAttributes {
                 .nameAttributeKey("id")
                 .build();
     }
+
 }
